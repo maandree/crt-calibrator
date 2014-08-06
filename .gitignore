@@ -1,0 +1,15 @@
+_/
+bin/
+src/
+.*
+!.git*
+*~
+\#*\#
+*.bak
+*.swp
+*.swo
+*.o
+*.su
+*.out
+*.gch
+
