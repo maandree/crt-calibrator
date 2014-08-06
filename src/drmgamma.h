@@ -44,7 +44,59 @@ typedef struct drm_card
    */
   size_t crtc_count;
   
+  /**
+   * The available connectors
+   */
+  drmModeConnector** restrict connectors;
+  
+  /**
+   * The available encoders
+   */
+  drmModeEncoder** restrict encoders;
+  
+  /**
+   * The number of connectors and encoders
+   */
+  size_t connector_count;
+  
 } drm_card_t;
+
+/**
+ * CRT controller information
+ */
+typedef struct drm_crtc
+{
+  /**
+   * CRT controller identifier
+   */
+  uint32_t id;
+  
+  /**
+   * The graphics card
+   */
+  drm_card_t* restrict card;
+  
+  /**
+   * The CRT controller's connector
+   */
+  drmModeConnector* restrict connector;
+  
+  /**
+   * The CRT controller's encoder
+   */
+  drmModeEncoder* restrict encoder;
+  
+  /**
+   * Whether the connector is connected
+   */
+  int connected;
+  
+  /**
+   * The CRT's EDID, hexadecimally encoded
+   */
+  char* edid;
+  
+} drm_crtc_t;
 
 
 /**
@@ -69,6 +121,23 @@ int drm_card_open(size_t index, drm_card_t* restrict card);
  * @param  card  The graphics card information
  */
 void drm_card_close(drm_card_t* restrict card);
+
+/**
+ * Acquire access to a CRT controller
+ * 
+ * @param   index  The index of the CRT controller
+ * @param   card   The graphics card information
+ * @param   crtc   CRT controller information to fill in
+ * @return         Zero on success, -1 on error
+ */
+int drm_crtc_open(size_t index, drm_card_t* restrict card, drm_crtc_t* restrict crtc);
+
+/**
+ * Release access to a CRT controller
+ * 
+ * @param  crtc  The CRT controller information to fill in
+ */
+void drm_crtc_close(drm_crtc_t* restrict crtc);
 
 
 #endif

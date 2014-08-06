@@ -21,6 +21,8 @@
 #include <errno.h>
 #include <stdio.h>
 #include <fcntl.h>
+#include <stdlib.h>
+#include <string.h>
 
 
 
@@ -56,7 +58,6 @@ size_t drm_card_count(void)
       if (access(buf, F_OK) < 0)
 	return count;
     }
-
 }
 
 /**
@@ -70,9 +71,13 @@ int drm_card_open(size_t index, drm_card_t* restrict card)
 {
   char buf[DRM_DEV_NAME_MAX_LEN];
   int old_errno;
+  size_t i, n;
   
   card->fd = -1;
   card->res = NULL;
+  card->connectors = NULL;
+  card->encoders = NULL;
+  card->connector_count = 0;
   
   sprintf(buf, DRM_DEV_NAME, DRM_DIR_NAME, (int)index);
   card->fd = open(buf, O_RDWR | O_CLOEXEC);
@@ -83,7 +88,30 @@ int drm_card_open(size_t index, drm_card_t* restrict card)
   if (card->res == NULL)
     goto fail;
   
-  card->crtc_count = (size_t)(card->res->count_crtcs);
+  card->crtc_count      = (size_t)(card->res->count_crtcs);
+  card->connector_count = (size_t)(card->res->count_connectors);
+  n = card->connector_count;
+  
+  card->connectors = calloc(n, sizeof(drmModeConnector*));
+  if (card->connectors == NULL)
+    goto fail;
+  card->encoders   = calloc(n, sizeof(drmModeEncoder*));
+  if (card->encoders == NULL)
+    goto fail;
+  
+  for (i = 0; i < n; i++)
+    {
+      card->connectors[i] = drmModeGetConnector(card->fd, card->res->connectors[i]);
+      if (card->connectors[i] == NULL)
+	goto fail;
+      
+      if (card->connectors[i]->encoder_id != 0)
+	{
+	  card->encoders[i] = drmModeGetEncoder(card->fd, card->connectors[i]->encoder_id);
+	  if (card->encoders[i] == NULL)
+	    goto fail;
+	}
+    }
   
   return 0;
  fail:
@@ -101,8 +129,107 @@ int drm_card_open(size_t index, drm_card_t* restrict card)
  */
 void drm_card_close(drm_card_t* restrict card)
 {
+  size_t i, n = card->connector_count;
+  
+  if (card->encoders != NULL)
+    for (i = 0; i < n; i++)
+      if (card->encoders[i] != NULL)
+	drmModeFreeEncoder(card->encoders[i]);
+  free(card->encoders), card->encoders = NULL;
+  
+  if (card->connectors != NULL)
+    for (i = 0; i < n; i++)
+      if (card->connectors[i] != NULL)
+	drmModeFreeConnector(card->connectors[i]);
+  free(card->connectors), card->connectors = NULL;
+  
   if (card->res != NULL)
     drmModeFreeResources(card->res), card->res = NULL;
   if (card->fd != -1)
     close(card->fd), card->fd = -1;
 }
+
+
+/**
+ * Acquire access to a CRT controller
+ * 
+ * @param   index  The index of the CRT controller
+ * @param   card   The graphics card information
+ * @param   crtc   CRT controller information to fill in
+ * @return         Zero on success, -1 on error
+ */
+int drm_crtc_open(size_t index, drm_card_t* restrict card, drm_crtc_t* restrict crtc)
+{
+  drmModePropertyRes* restrict prop;
+  drmModePropertyBlobRes* restrict blob;
+  size_t i;
+  
+  crtc->edid = NULL;
+  
+  crtc->id = card->res->crtcs[index];
+  crtc->card = card;
+  
+  for (i = 0; i < card->connector_count; i++)
+    if (card->encoders[i] != NULL)
+      if (card->encoders[i]->crtc_id == crtc->id)
+	{
+	  crtc->connector = card->connectors[i];
+	  crtc->encoder = card->encoders[i];
+	}
+  
+  crtc->connected = crtc->connector->connection == DRM_MODE_CONNECTED;
+  
+  for (i = 0; i < crtc->connector->count_props; i++)
+    {
+      size_t j;
+      
+      prop = drmModeGetProperty(card->fd, crtc->connector->props[i]);
+      if (prop == NULL)
+        continue;
+      
+      if (strcmp(prop->name, "EDID"))
+	goto free_prop;
+      
+      
+      blob = drmModeGetPropertyBlob(card->fd, (uint32_t)(crtc->connector->prop_values[i]));
+      i = crtc->connector->count_props;
+      if ((blob == NULL) || (blob->data == NULL))
+	goto free_blob;
+      
+      crtc->edid = malloc((blob->length * 2 + 1) * sizeof(char));
+      if (crtc->edid == NULL)
+	{
+	  drmModeFreePropertyBlob(blob);
+	  drmModeFreeProperty(prop);
+	  return -1;
+	}
+      for (j = 0; j < blob->length; j++)
+	{
+	  unsigned char c = ((unsigned char*)(blob->data))[j];
+	  crtc->edid[j * 2 + 0] = "0123456789ABCDEF"[(c >> 4) & 15];
+	  crtc->edid[j * 2 + 1] = "0123456789ABCDEF"[(c >> 0) & 15];
+	}
+      crtc->edid[blob->length * 2] = '\0';
+      
+    free_blob:
+      if (blob != NULL)
+	drmModeFreePropertyBlob(blob);
+      
+    free_prop:
+      drmModeFreeProperty(prop);
+    }
+  
+  return 0;
+}
+
+
+/**
+ * Release access to a CRT controller
+ * 
+ * @param  crtc  The CRT controller information to fill in
+ */
+void drm_crtc_close(drm_crtc_t* restrict crtc)
+{
+  free(crtc->edid), crtc->edid = NULL;
+}
+
