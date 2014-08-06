@@ -76,12 +76,12 @@ int fb_open(size_t index, framebuffer_t* restrict fb)
   struct fb_var_screeninfo var_info;
   int old_errno;
   
-  fb->fd = 0;
+  fb->fd = -1;
   fb->mem = MAP_FAILED;
   
   sprintf(buf, FB_DEVICE_PATTERN, index);
   fb->fd = open(buf, O_RDWR);
-  if (fb->fd == 0)
+  if (fb->fd == -1)
     goto fail;
   
   if (ioctl(fb->fd, FBIOGET_FSCREENINFO, &fix_info) ||
@@ -116,8 +116,8 @@ int fb_open(size_t index, framebuffer_t* restrict fb)
  */
 void fb_close(framebuffer_t* restrict fb)
 {
-  if (fb->fd)
-    close(fb->fd);
+  if (fb->fd != -1)
+    close(fb->fd), fb->fd = -1;
 }
 
 

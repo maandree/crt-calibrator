@@ -15,8 +15,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef CRT_CALIBRATOR_H
-#define CRT_CALIBRATOR_H
+#ifndef CRT_CALIBRATOR_FRAMEBUFFER_H
+#define CRT_CALIBRATOR_FRAMEBUFFER_H
 
 
 #include <stddef.h>
@@ -29,7 +29,7 @@
 typedef struct framebuffer
 {
   /**
-   * The file descriptor used to access the framebuffer, 0 if not opened
+   * The file descriptor used to access the framebuffer, -1 if not opened
    */
   int fd;
   
@@ -72,7 +72,7 @@ size_t fb_count(void);
  * Open a framebuffer
  * 
  * @param   index  The index of the framebuffer to open
- * @param   fb     Framevuffer information to fill in
+ * @param   fb     Framebuffer information to fill in
  * @return         Zero on success, -1 on error
  */
 int fb_open(size_t index, framebuffer_t* restrict fb);
