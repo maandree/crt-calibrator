@@ -61,6 +61,7 @@ typedef struct drm_card
   
 } drm_card_t;
 
+
 /**
  * CRT controller information
  */
@@ -94,9 +95,30 @@ typedef struct drm_crtc
   /**
    * The CRT's EDID, hexadecimally encoded
    */
-  char* edid;
+  char* restrict edid;
+  
+  /**
+   * The number of stops on the gamma ramps
+   */
+  size_t gamma_stops;
+  
+  /**
+   * The gamma ramp for the red channel
+   */
+  uint16_t* restrict red;
+  
+  /**
+   * The gamma ramp for the green channel
+   */
+  uint16_t* restrict green;
+  
+  /**
+   * The gamma ramp for the blue channel
+   */
+  uint16_t* restrict blue;
   
 } drm_crtc_t;
+
 
 
 /**
@@ -138,6 +160,22 @@ int drm_crtc_open(size_t index, drm_card_t* restrict card, drm_crtc_t* restrict 
  * @param  crtc  The CRT controller information to fill in
  */
 void drm_crtc_close(drm_crtc_t* restrict crtc);
+
+/**
+ * Read the gamma ramps for a CRT controller
+ * 
+ * @param   crtc  CRT controller information
+ * @return        Zero on success, -1 on error 
+ */
+int drm_get_gamma(drm_crtc_t* restrict crtc);
+
+/**
+ * Apply gamma ramps for a CRT controller
+ * 
+ * @param   crtc  CRT controller information
+ * @return        Zero on success, -1 on error
+ */
+int drm_set_gamma(drm_crtc_t* restrict crtc);
 
 
 #endif

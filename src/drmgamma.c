@@ -162,9 +162,14 @@ int drm_crtc_open(size_t index, drm_card_t* restrict card, drm_crtc_t* restrict 
 {
   drmModePropertyRes* restrict prop;
   drmModePropertyBlobRes* restrict blob;
+  drmModeCrtc* restrict info;
   size_t i;
+  int old_errno;
   
-  crtc->edid = NULL;
+  crtc->edid  = NULL;
+  crtc->red   = NULL;
+  crtc->green = NULL;
+  crtc->blue  = NULL;
   
   crtc->id = card->res->crtcs[index];
   crtc->card = card;
@@ -178,6 +183,19 @@ int drm_crtc_open(size_t index, drm_card_t* restrict card, drm_crtc_t* restrict 
 	}
   
   crtc->connected = crtc->connector->connection == DRM_MODE_CONNECTED;
+  
+  info = drmModeGetCrtc(card->fd, crtc->id);
+  if (info == NULL)
+    return -1;
+  crtc->gamma_stops = (size_t)(info->gamma_size);
+  drmModeFreeCrtc(info);
+  
+  /* `calloc` is for some reason required when reading the gamma ramps. */
+  crtc->red = calloc(3 * crtc->gamma_stops, sizeof(uint16_t));
+  if (crtc->red == NULL)
+    return -1;
+  crtc->green = crtc->red   + crtc->gamma_stops;
+  crtc->blue  = crtc->green + crtc->gamma_stops;
   
   for (i = 0; i < crtc->connector->count_props; i++)
     {
@@ -199,8 +217,11 @@ int drm_crtc_open(size_t index, drm_card_t* restrict card, drm_crtc_t* restrict 
       crtc->edid = malloc((blob->length * 2 + 1) * sizeof(char));
       if (crtc->edid == NULL)
 	{
+	  old_errno = errno;
 	  drmModeFreePropertyBlob(blob);
 	  drmModeFreeProperty(prop);
+	  free(crtc->red), crtc->red = NULL;
+	  errno = old_errno;
 	  return -1;
 	}
       for (j = 0; j < blob->length; j++)
@@ -231,5 +252,36 @@ int drm_crtc_open(size_t index, drm_card_t* restrict card, drm_crtc_t* restrict 
 void drm_crtc_close(drm_crtc_t* restrict crtc)
 {
   free(crtc->edid), crtc->edid = NULL;
+  free(crtc->red), crtc->red = NULL;
+}
+
+
+/**
+ * Read the gamma ramps for a CRT controller
+ * 
+ * @param   crtc  CRT controller information
+ * @return        Zero on success, -1 on error 
+ */
+int drm_get_gamma(drm_crtc_t* restrict crtc)
+{
+  int r;
+  r = drmModeCrtcGetGamma(crtc->card->fd, crtc->id, crtc->gamma_stops,
+			  crtc->red, crtc->green, crtc->blue);
+  return -!!r;
+}
+
+
+/**
+ * Apply gamma ramps for a CRT controller
+ * 
+ * @param   crtc  CRT controller information
+ * @return        Zero on success, -1 on error
+ */
+int drm_set_gamma(drm_crtc_t* restrict crtc)
+{
+  int r;
+  r = drmModeCrtcSetGamma(crtc->card->fd, crtc->id, crtc->gamma_stops,
+			  crtc->red, crtc->green, crtc->blue);
+  return -!!r;
 }
 
