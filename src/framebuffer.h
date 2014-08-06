@@ -108,6 +108,30 @@ uint32_t fb_colour(int red, int green, int blue);
 void fb_fill_rectangle(framebuffer_t* restrict fb, uint32_t colour,
 		       uint32_t x, uint32_t y, uint32_t width, uint32_t height);
 
+/**
+ * Draw a horizontal line segment on a framebuffer
+ * 
+ * @param  fb      The framebuffer
+ * @param  colour  The colour to use when drawing the rectangle
+ * @param  x       The starting pixel on the X axis for the line segment
+ * @param  y       The starting pixel on the Y axis for the line segment
+ * @param  length  The length of the line segment, in pixels
+ */
+void fb_draw_horizontal_line(framebuffer_t* restrict fb, uint32_t colour,
+			     uint32_t x, uint32_t y, uint32_t length);
+
+/**
+ * Draw a vertical line segment on a framebuffer
+ * 
+ * @param  fb      The framebuffer
+ * @param  colour  The colour to use when drawing the rectangle
+ * @param  x       The starting pixel on the X axis for the line segment
+ * @param  y       The starting pixel on the Y axis for the line segment
+ * @param  length  The length of the line segment, in pixels
+ */
+void fb_draw_vertical_line(framebuffer_t* restrict fb, uint32_t colour,
+			   uint32_t x, uint32_t y, uint32_t length);
+
 
 #endif
 
