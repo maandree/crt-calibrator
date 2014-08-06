@@ -20,6 +20,45 @@
 
 
 #include <stddef.h>
+#include <stdint.h>
+
+
+/**
+ * Framebuffer information
+ */
+typedef struct framebuffer
+{
+  /**
+   * The file descriptor used to access the framebuffer, 0 if not opened
+   */
+  int fd;
+  
+  /**
+   * The width of the display in pixels
+   */
+  uint32_t width;
+  
+  /**
+   * The height of the display in pixels
+   */
+  uint32_t height;
+  
+  /**
+   * Increment for `mem` to move to next pixel on the line
+   */
+  uint32_t bytes_per_pixel;
+  
+  /**
+   * Increment for `mem` to move down one line but stay in the same column
+   */
+  uint32_t line_length;
+  
+  /**
+   * Framebuffer pointer, `MAP_FAILED` (from <sys/mman.h>) if not mapped
+   */
+  int8_t* mem;
+  
+} framebuffer_t;
 
 
 /**
@@ -28,6 +67,27 @@
  * @return  The number of framebuffers on the system
  */
 size_t fb_count(void);
+
+/**
+ * Open a framebuffer
+ * 
+ * @param   index  The index of the framebuffer to open
+ * @param   fb     Framevuffer information to fill in
+ * @return         Zero on success, -1 on error
+ */
+int fb_open(size_t index, framebuffer_t* restrict fb);
+
+/**
+ * Close a framebuffer
+ * 
+ * @param  fb  The framebuffer information
+ */
+void fb_close(framebuffer_t* restrict fb);
+
+uint32_t fb_colour(int red, int green, int blue);
+
+void fb_fill_rectangle(framebuffer_t* restrict fb, uint32_t colour,
+		       uint32_t x, uint32_t y, uint32_t width, uint32_t height);
 
 
 #endif
