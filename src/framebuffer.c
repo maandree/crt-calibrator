@@ -121,6 +121,15 @@ void fb_close(framebuffer_t* restrict fb)
 }
 
 
+/**
+ * Construct an sRGB colour in 32-bit XRGB encoding to
+ * use when specifying colours
+ * 
+ * @param   red    The red   component from [0, 255] sRGB
+ * @param   green  The green component from [0, 255] sRGB
+ * @param   blue   The blue  component from [0, 255] sRGB
+ * @return         The colour as one 32-bit integer
+ */
 uint32_t fb_colour(int red, int green, int blue)
 {
   uint32_t rc = 0;
@@ -131,6 +140,16 @@ uint32_t fb_colour(int red, int green, int blue)
 }
 
 
+/**
+ * Print a filled in rectangle to a framebuffer
+ * 
+ * @param  fb      The framebuffer
+ * @param  colour  The colour to use when drawing the rectangle
+ * @param  x       The starting pixel on the X axis for the rectangle
+ * @param  y       The starting pixel on the Y axis for the rectangle
+ * @param  width   The width of the rectangle, in pixels
+ * @param  height  The height of the rectangle, in pixels
+ */
 void fb_fill_rectangle(framebuffer_t* restrict fb, uint32_t colour,
 		       uint32_t x, uint32_t y, uint32_t width, uint32_t height)
 {
@@ -146,15 +165,5 @@ void fb_fill_rectangle(framebuffer_t* restrict fb, uint32_t colour,
       int8_t* pixel = mem + x_;
       *(uint32_t*)pixel = colour;
     }
-}
-
-
-int main()
-{
-  framebuffer_t fb;
-  fb_open(0, &fb);
-  fb_fill_rectangle(&fb, fb_colour(36, 149, 190), 20, 20, fb.width - 40, fb.height - 40);
-  fb_close(&fb);
-  return 0;
 }
 
