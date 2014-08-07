@@ -87,18 +87,18 @@ static void draw_digit(framebuffer_t* restrict fb, int colour, uint32_t x, uint3
 
 static int gamma_digit(drm_crtc_t* restrict crtc, int colour, size_t value)
 {
-#define _  0
-  const int DIGITS[11] = { 1 | 2 | 4 | _ | 16 | 32 | 64,  /* (0) */
-			   _ | _ | 4 | _ | _  | 32 | _,   /* (1) */
-			   1 | _ | 4 | 8 | 16 | _  | 64,  /* (2) */
-			   1 | _ | 4 | 8 | _  | 32 | 64,  /* (3) */
-			   _ | 2 | 4 | 8 | _  | 32 | _,   /* (4) */
-			   1 | 2 | _ | 8 | _  | 32 | 64,  /* (5) */
-			   1 | 2 | _ | 8 | 16 | 32 | 64,  /* (6) */
-			   1 | _ | 4 | _ | _  | 32 | _,   /* (7) */
-			   1 | 2 | 4 | 8 | 16 | 32 | 64,  /* (8) */
-			   1 | 2 | 4 | 8 | _  | 32 | 64,  /* (9) */
-			   _ | _ | _ | _ | _  | _  | _}; /* not visible */
+#define __  0
+  const int DIGITS[11] = { 1  | 2  | 4  | __ | 16 | 32 | 64,  /* (0) */
+			   __ | __ | 4  | __ | __ | 32 | __,  /* (1) */
+			   1  | __ | 4  | 8  | 16 | __ | 64,  /* (2) */
+			   1  | __ | 4  | 8  | __ | 32 | 64,  /* (3) */
+			   __ | 2  | 4  | 8  | __ | 32 | __,  /* (4) */
+			   1  | 2  | __ | 8  | __ | 32 | 64,  /* (5) */
+			   1  | 2  | __ | 8  | 16 | 32 | 64,  /* (6) */
+			   1  | __ | 4  | __ | __ | 32 | __,  /* (7) */
+			   1  | 2  | 4  | 8  | 16 | 32 | 64,  /* (8) */
+			   1  | 2  | 4  | 8  | __ | 32 | 64,  /* (9) */
+			   __ | __ | __ | __ | __ | __ | __}; /* not visible */
   int i, digit = DIGITS[value];
   
   for (i = 0; i < 7; i++)
@@ -107,7 +107,7 @@ static int gamma_digit(drm_crtc_t* restrict crtc, int colour, size_t value)
       int j = i + colour;
       crtc->red[j] = crtc->green[j] = crtc->blue[j] = value;
     }
-#undef _
+#undef __
 }
 
 
