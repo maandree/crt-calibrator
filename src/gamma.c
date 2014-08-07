@@ -38,7 +38,7 @@ void gamma_analyse(size_t stops, const uint16_t* restrict ramp, double* restrict
   middle            = (double)(ramp[stops / 2]) / (double)0xFFFF;
   
   middle = (middle - min) / (max - min);
-  *gamma = log(2.0) / log(middle);
+  *gamma = log((double)2) / log(middle);
 }
 
 
@@ -55,7 +55,7 @@ void gamma_generate(size_t stops, uint16_t* restrict ramp, double gamma,
 		    double contrast, double brightness)
 {
   double diff = contrast - brightness;
-  double gamma_ = 1.0 / gamma;
+  double gamma_ = (double)1 / gamma;
   size_t i;
   int32_t y;
   double y_;
@@ -67,7 +67,7 @@ void gamma_generate(size_t stops, uint16_t* restrict ramp, double gamma,
       y = (int32_t)(y * 0xFFFF);
       if (y < 0x0000)  y = 0x0000;
       if (y > 0xFFFF)  y = 0xFFFF;
-      ramp[i] = y;
+      ramp[i] = (uint16_t)y;
     }
 }
 

@@ -93,7 +93,7 @@ void fb_close(framebuffer_t* restrict fb);
  * @param   blue   The blue  component from [0, 255] sRGB
  * @return         The colour as one 32-bit integer
  */
-uint32_t fb_colour(int red, int green, int blue);
+uint32_t fb_colour(int red, int green, int blue) __attribute__((const));
 
 /**
  * Print a filled in rectangle to a framebuffer

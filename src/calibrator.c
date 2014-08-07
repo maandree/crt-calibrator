@@ -18,6 +18,7 @@
 #include "calibrator.h"
 
 #include "gamma.h"
+#include "state.h"
 
 #include <stdio.h>
 
@@ -26,22 +27,19 @@
 /**
  * Draw bars in different shades of grey, red, green and blue
  * used for calibrating the contrast and brightness
- * 
- * @return  Zero on success, -1 on error
  */
-int draw_contrast_brightness(void)
+void draw_contrast_brightness(void)
 {
   const int CONTRAST_BRIGHTNESS_LEVELS[21] =
     {
       0, 17, 27, 38, 48, 59, 70, 82, 94, 106, 119, 131,
       144, 158, 171, 185, 198, 212, 226, 241, 255
     };
-  size_t f, y, x, fn = fb_count();
-  for (f = 0; f < fn; f++)
+  size_t f;
+  uint32_t y, x;
+  for (f = 0; f < framebuffer_count; f++)
     {
-      framebuffer_t fb;
-      if (fb_open(f, &fb) < 0)
-        return -1;
+      framebuffer_t* restrict fb = framebuffers + f;
       for (y = 0; y < 4; y++)
         for (x = 0; x < 21; x++)
           {
@@ -49,15 +47,13 @@ int draw_contrast_brightness(void)
             uint32_t colour = fb_colour(v * ((y == 1) | (y == 0)),
                                         v * ((y == 2) | (y == 0)),
                                         v * ((y == 3) | (y == 0)));
-            fb_fill_rectangle(&fb, colour,
-                              x * fb.width / 21,
-                              y * fb.height / 4,
-                              (x + 1) * fb.width / 21 - x * fb.width / 21,
-                              (y + 1) * fb.height / 4 - y * fb.height / 4);
+            fb_fill_rectangle(fb, colour,
+                              x * fb->width / 21,
+                              y * fb->height / 4,
+                              (x + 1) * fb->width / 21 - x * fb->width / 21,
+                              (y + 1) * fb->height / 4 - y * fb->height / 4);
           }
-      fb_close(&fb);
     }
-  return 0;
 }
 
 
@@ -101,12 +97,11 @@ void draw_digit(framebuffer_t* restrict fb, int colour, uint32_t x, uint32_t y)
  * for one of the seven segment display on only that CRT controller's
  * monitors
  * 
- * @param   crtc    The CRT controller information
- * @param   colour  The intensity of the least intense colour in the seven segment display
- * @param   value   The valud of the digit to display
- * @return          Zero on success, -1 on error
+ * @param  crtc    The CRT controller information
+ * @param  colour  The intensity of the least intense colour in the seven segment display
+ * @param  value   The valud of the digit to display
  */
-int gamma_digit(drm_crtc_t* restrict crtc, int colour, size_t value)
+void gamma_digit(drm_crtc_t* restrict crtc, int colour, size_t value)
 {
 #define __  0
   const int DIGITS[11] = { 1  | 2  | 4  | __ | 16 | 32 | 64,  /* (0) */
@@ -124,9 +119,9 @@ int gamma_digit(drm_crtc_t* restrict crtc, int colour, size_t value)
   
   for (i = 0; i < 7; i++)
     {
-      uint16_t value = (digit & (1 << i)) ? 0xFFFF : 0;
+      uint16_t c = (digit & (1 << i)) ? 0xFFFF : 0;
       int j = i + colour;
-      crtc->red[j] = crtc->green[j] = crtc->blue[j] = value;
+      crtc->red[j] = crtc->green[j] = crtc->blue[j] = c;
     }
 #undef __
 }
@@ -135,53 +130,28 @@ int gamma_digit(drm_crtc_t* restrict crtc, int colour, size_t value)
 /**
  * Draw an unique index on each monitor
  * 
- * @return   Zero on success, -1 on error
+ * @return  Zero on success, -1 on error
  */
 int draw_id(void)
 {
-  size_t f, c, i, id = 0, fn = fb_count(), cn = drm_card_count();
-  for (f = 0; f < fn; f++)
+  size_t f, c, id = 0;
+  for (f = 0; f < framebuffer_count; f++)
     {
-      framebuffer_t fb;
-      if (fb_open(f, &fb) < 0)
-	return -1;
-      fb_fill_rectangle(&fb, fb_colour(0, 0, 0), 0, 0, fb.width, fb.height);
-      draw_digit(&fb, 1, 40, 40);
-      draw_digit(&fb, 8, 180, 40);
-      fb_close(&fb);
+      framebuffer_t* restrict fb = framebuffers + f;
+      fb_fill_rectangle(fb, fb_colour(0, 0, 0), 0, 0, fb->width, fb->height);
+      draw_digit(fb, 1, 40, 40);
+      draw_digit(fb, 8, 180, 40);
     }
-  for (c = 0; c < cn; c++)
+  for (c = 0; c < crtc_count; c++)
     {
-      drm_card_t card;
-      if (drm_card_open(c, &card) < 0)
+      drm_crtc_t* restrict crtc = crtcs + c;
+      if (drm_get_gamma(crtc) < 0)
 	return -1;
-      for (i = 0; i < card.crtc_count; i++)
-	{
-	  drm_crtc_t crtc;
-	  if (drm_crtc_open(i, &card, &crtc) < 0)
-	    {
-	      drm_card_close(&card);
-	      return -1;
-	    }
-	  if (crtc.connected == 0)
-	    goto not_connected;
-	  if (drm_get_gamma(&crtc) < 0)
-	    goto crtc_fail;
-	  gamma_digit(&crtc, 1, id < 10 ? 10 : (id / 10) % 10);
-	  gamma_digit(&crtc, 8,                (id /  1) % 10);
-	  id++;
-	  if (drm_set_gamma(&crtc) < 0)
-	    goto crtc_fail;
-	not_connected:
-	  drm_crtc_close(&crtc);
-	  
-	  continue;
-	crtc_fail:
-	  drm_crtc_close(&crtc);
-	  drm_card_close(&card);
-	  return -1;
-	}
-      drm_card_close(&card);
+      gamma_digit(crtc, 1, id < 10 ? 10 : (id / 10) % 10);
+      gamma_digit(crtc, 8,                (id /  1) % 10);
+      id++;
+      if (drm_set_gamma(crtc) < 0)
+	return -1;
     }
   return 0;
 }
@@ -189,17 +159,14 @@ int draw_id(void)
 
 /**
  * Draw squares used as reference when tweeking the gamma correction
- * 
- * @return  Zero on success, -1 on error
  */
-int draw_gamma(void)
+void draw_gamma(void)
 {
-  size_t f, x, y, fn = fb_count();
-  for (f = 0; f < fn; f++)
+  size_t f;
+  uint32_t x, y;
+  for (f = 0; f < framebuffer_count; f++)
     {
-      framebuffer_t fb;
-      if (fb_open(f, &fb) < 0)
-	return -1;
+      framebuffer_t* restrict fb = framebuffers + f;
       for (x = 0; x < 4; x++)
 	{
 	  int r = (x == 1) || (x == 0);
@@ -209,34 +176,37 @@ int draw_gamma(void)
 	  uint32_t average    = fb_colour(188 * r, 188 * g, 188 * b);
 	  uint32_t high       = fb_colour(255 * r, 255 * g, 255 * b);
 	  uint32_t low        = fb_colour(0, 0, 0);
-	  uint32_t xoff = x * fb.width / 4;
-	  fb_fill_rectangle(&fb, background, xoff, 0, fb.width / 4, fb.height);
-	  xoff += (fb.width / 4 - 200) / 2;
-	  fb_fill_rectangle(&fb, high, xoff, 40, 200, 200);
-	  fb_fill_rectangle(&fb, average, xoff + 50, 40, 100, 200);
-	  fb_fill_rectangle(&fb, average, xoff, 280, 200, 200);
+	  uint32_t xoff = x * fb->width / 4;
+	  fb_fill_rectangle(fb, background, xoff, 0, fb->width / 4, fb->height);
+	  xoff += (fb->width / 4 - 200) / 2;
+	  fb_fill_rectangle(fb, high, xoff, 40, 200, 200);
+	  fb_fill_rectangle(fb, average, xoff + 50, 40, 100, 200);
+	  fb_fill_rectangle(fb, average, xoff, 280, 200, 200);
 	  for (y = 0; y < 200; y += 2)
 	    {
-	      fb_draw_horizontal_line(&fb, high, xoff + 50, 280 + y + 0, 100);
-	      fb_draw_horizontal_line(&fb, low , xoff + 50, 280 + y + 1, 100);
+	      fb_draw_horizontal_line(fb, high, xoff + 50, 280 + y + 0, 100);
+	      fb_draw_horizontal_line(fb, low , xoff + 50, 280 + y + 1, 100);
 	    }
-	  fb_fill_rectangle(&fb, average, xoff, 520, 200, 200);
-	  fb_fill_rectangle(&fb, high, xoff + 50, 520, 100, 200);
+	  fb_fill_rectangle(fb, average, xoff, 520, 200, 200);
+	  fb_fill_rectangle(fb, high, xoff + 50, 520, 100, 200);
 	}
-      fb_close(&fb);
     }
-  return 0;
 }
 
 
 int main(int argc __attribute__((unused)), char* argv[])
 {
-  if (draw_gamma() < 0)
+  if (acquire_video() < 0)
     goto fail;
   
+  if (draw_id() < 0)
+    goto fail;
+  
+  release_video();
   return 0;
  fail:
   perror(*argv);
+  release_video();
   return 1;
 }
 

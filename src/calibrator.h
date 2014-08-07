@@ -29,10 +29,8 @@
 /**
  * Draw bars in different shades of grey, red, green and blue
  * used for calibrating the contrast and brightness
- * 
- * @return  Zero on success, -1 on error
  */
-int draw_contrast_brightness(void);
+void draw_contrast_brightness(void);
 
 /**
  * Draw a seven segment display
@@ -49,26 +47,23 @@ void draw_digit(framebuffer_t* restrict fb, int colour, uint32_t x, uint32_t y);
  * for one of the seven segment display on only that CRT controller's
  * monitors
  * 
- * @param   crtc    The CRT controller information
- * @param   colour  The intensity of the least intense colour in the seven segment display
- * @param   value   The valud of the digit to display
- * @return          Zero on success, -1 on error
+ * @param  crtc    The CRT controller information
+ * @param  colour  The intensity of the least intense colour in the seven segment display
+ * @param  value   The valud of the digit to display
  */
-int gamma_digit(drm_crtc_t* restrict crtc, int colour, size_t value);
+void gamma_digit(drm_crtc_t* restrict crtc, int colour, size_t value);
 
 /**
  * Draw an unique index on each monitor
  * 
- * @return   Zero on success, -1 on error
+ * @return  Zero on success, -1 on error
  */
 int draw_id(void);
 
 /**
  * Draw squares used as reference when tweeking the gamma correction
- * 
- * @return  Zero on success, -1 on error
  */
-int draw_gamma(void);
+void draw_gamma(void);
 
 
 #endif

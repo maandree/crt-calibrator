@@ -84,11 +84,11 @@ int fb_open(size_t index, framebuffer_t* restrict fb)
   if (fb->fd == -1)
     goto fail;
   
-  if (ioctl(fb->fd, FBIOGET_FSCREENINFO, &fix_info) ||
-      ioctl(fb->fd, FBIOGET_VSCREENINFO, &var_info))
+  if (ioctl(fb->fd, (unsigned long int)FBIOGET_FSCREENINFO, &fix_info) ||
+      ioctl(fb->fd, (unsigned long int)FBIOGET_VSCREENINFO, &var_info))
     goto fail;
   
-  fb->mem = mmap(NULL, fix_info.smem_len, PROT_WRITE, MAP_SHARED, fb->fd, 0);
+  fb->mem = mmap(NULL, (size_t)(fix_info.smem_len), PROT_WRITE, MAP_SHARED, fb->fd, (off_t)0);
   if (fb->mem == MAP_FAILED)
     goto fail;
   
@@ -133,9 +133,9 @@ void fb_close(framebuffer_t* restrict fb)
 uint32_t fb_colour(int red, int green, int blue)
 {
   uint32_t rc = 0;
-  rc |= red,   rc <<= 8;
-  rc |= green, rc <<= 8;
-  rc |= blue;
+  rc |= (uint32_t)red,   rc <<= 8;
+  rc |= (uint32_t)green, rc <<= 8;
+  rc |= (uint32_t)blue;
   return rc;
 }
 

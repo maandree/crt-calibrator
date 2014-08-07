@@ -197,7 +197,7 @@ int drm_crtc_open(size_t index, drm_card_t* restrict card, drm_crtc_t* restrict 
   crtc->green = crtc->red   + crtc->gamma_stops;
   crtc->blue  = crtc->green + crtc->gamma_stops;
   
-  for (i = 0; i < crtc->connector->count_props; i++)
+  for (i = 0; i < (size_t)(crtc->connector->count_props); i++)
     {
       size_t j;
       
@@ -210,7 +210,7 @@ int drm_crtc_open(size_t index, drm_card_t* restrict card, drm_crtc_t* restrict 
       
       
       blob = drmModeGetPropertyBlob(card->fd, (uint32_t)(crtc->connector->prop_values[i]));
-      i = crtc->connector->count_props;
+      i = (size_t)(crtc->connector->count_props);
       if ((blob == NULL) || (blob->data == NULL))
 	goto free_blob;
       
@@ -265,7 +265,7 @@ void drm_crtc_close(drm_crtc_t* restrict crtc)
 int drm_get_gamma(drm_crtc_t* restrict crtc)
 {
   int r;
-  r = drmModeCrtcGetGamma(crtc->card->fd, crtc->id, crtc->gamma_stops,
+  r = drmModeCrtcGetGamma(crtc->card->fd, crtc->id, (uint32_t)(crtc->gamma_stops),
 			  crtc->red, crtc->green, crtc->blue);
   return -!!r;
 }
@@ -280,7 +280,7 @@ int drm_get_gamma(drm_crtc_t* restrict crtc)
 int drm_set_gamma(drm_crtc_t* restrict crtc)
 {
   int r;
-  r = drmModeCrtcSetGamma(crtc->card->fd, crtc->id, crtc->gamma_stops,
+  r = drmModeCrtcSetGamma(crtc->card->fd, crtc->id, (uint32_t)(crtc->gamma_stops),
 			  crtc->red, crtc->green, crtc->blue);
   return -!!r;
 }
