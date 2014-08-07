@@ -24,15 +24,14 @@
 #include <stdio.h>
 
 
-static const int CONTRAST_BRIGHTNESS_LEVELS[21] =
-  {
-    0, 17, 27, 38, 48, 59, 70, 82, 94, 106, 119, 131,
-    144, 158, 171, 185, 198, 212, 226, 241, 255
-  };
-
 
 static int draw_contrast_brightness(void)
 {
+  const int CONTRAST_BRIGHTNESS_LEVELS[21] =
+    {
+      0, 17, 27, 38, 48, 59, 70, 82, 94, 106, 119, 131,
+      144, 158, 171, 185, 198, 212, 226, 241, 255
+    };
   size_t f, y, x, fn = fb_count();
   for (f = 0; f < fn; f++)
     {
