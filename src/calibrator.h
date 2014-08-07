@@ -19,5 +19,43 @@
 #define CRT_CALIBRATOR_CALIBRATOR_H
 
 
+/**
+ * Draw bars in different shades of grey, red, green and blue
+ * used for calibrating the contrast and brightness
+ * 
+ * @return  Zero on success, -1 on error
+ */
+int draw_contrast_brightness(void);
+
+/**
+ * Draw a seven segment display
+ * 
+ * @param  fb      The framebuffer to draw on
+ * @param  colour  The intensity of the least intense colour to use
+ * @param  x       The X component of the top left corner of the seven segment display
+ * @param  y       The Y component of the top left corner of the seven segment display
+ */
+void draw_digit(framebuffer_t* restrict fb, int colour, uint32_t x, uint32_t y);
+
+/**
+ * Manipulate a CRT controllers gamma ramps to display a specific digit
+ * for one of the seven segment display on only that CRT controller's
+ * monitors
+ * 
+ * @param   crtc    The CRT controller information
+ * @param   colour  The intensity of the least intense colour in the seven segment display
+ * @param   value   The valud of the digit to display
+ * @return          Zero on success, -1 on error
+ */
+int gamma_digit(drm_crtc_t* restrict crtc, int colour, size_t value);
+
+/**
+ * Draw an unique index on each monitor
+ * 
+ * @return   Zero on success, -1 on error
+ */
+int draw_id(void);
+
+
 #endif
 

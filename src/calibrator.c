@@ -25,7 +25,13 @@
 
 
 
-static int draw_contrast_brightness(void)
+/**
+ * Draw bars in different shades of grey, red, green and blue
+ * used for calibrating the contrast and brightness
+ * 
+ * @return  Zero on success, -1 on error
+ */
+int draw_contrast_brightness(void)
 {
   const int CONTRAST_BRIGHTNESS_LEVELS[21] =
     {
@@ -57,7 +63,15 @@ static int draw_contrast_brightness(void)
 }
 
 
-static void draw_digit(framebuffer_t* restrict fb, int colour, uint32_t x, uint32_t y)
+/**
+ * Draw a seven segment display
+ *
+ * @param  fb      The framebuffer to draw on
+ * @param  colour  The intensity of the least intense colour to use
+ * @param  x       The X component of the top left corner of the seven segment display
+ * @param  y       The Y component of the top left corner of the seven segment display
+ */
+void draw_digit(framebuffer_t* restrict fb, int colour, uint32_t x, uint32_t y)
 {
   uint32_t c;
   
@@ -84,7 +98,17 @@ static void draw_digit(framebuffer_t* restrict fb, int colour, uint32_t x, uint3
 }
 
 
-static int gamma_digit(drm_crtc_t* restrict crtc, int colour, size_t value)
+/**
+ * Manipulate a CRT controllers gamma ramps to display a specific digit
+ * for one of the seven segment display on only that CRT controller's
+ * monitors
+ * 
+ * @param   crtc    The CRT controller information
+ * @param   colour  The intensity of the least intense colour in the seven segment display
+ * @param   value   The valud of the digit to display
+ * @return          Zero on success, -1 on error
+ */
+int gamma_digit(drm_crtc_t* restrict crtc, int colour, size_t value)
 {
 #define __  0
   const int DIGITS[11] = { 1  | 2  | 4  | __ | 16 | 32 | 64,  /* (0) */
@@ -110,7 +134,12 @@ static int gamma_digit(drm_crtc_t* restrict crtc, int colour, size_t value)
 }
 
 
-static int draw_id(void)
+/**
+ * Draw an unique index on each monitor
+ * 
+ * @return   Zero on success, -1 on error
+ */
+int draw_id(void)
 {
   size_t f, c, i, id = 0, fn = fb_count(), cn = drm_card_count();
   for (f = 0; f < fn; f++)
