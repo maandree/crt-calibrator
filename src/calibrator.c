@@ -187,6 +187,11 @@ int draw_id(void)
 }
 
 
+/**
+ * Draw squares used as reference when tweeking the gamma correction
+ * 
+ * @return  Zero on success, -1 on error
+ */
 int draw_gamma(void)
 {
   size_t f, x, y, fn = fb_count();
