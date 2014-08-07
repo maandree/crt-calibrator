@@ -19,6 +19,13 @@
 #define CRT_CALIBRATOR_CALIBRATOR_H
 
 
+#include "framebuffer.h"
+#include "drmgamma.h"
+
+#include <stdint.h>
+#include <stddef.h>
+
+
 /**
  * Draw bars in different shades of grey, red, green and blue
  * used for calibrating the contrast and brightness

@@ -17,8 +17,6 @@
  */
 #include "calibrator.h"
 
-#include "framebuffer.h"
-#include "drmgamma.h"
 #include "gamma.h"
 
 #include <stdio.h>
@@ -189,9 +187,46 @@ int draw_id(void)
 }
 
 
+int draw_gamma(void)
+{
+  size_t f, x, y, fn = fb_count();
+  for (f = 0; f < fn; f++)
+    {
+      framebuffer_t fb;
+      if (fb_open(f, &fb) < 0)
+	return -1;
+      for (x = 0; x < 4; x++)
+	{
+	  int r = (x == 1) || (x == 0);
+	  int g = (x == 2) || (x == 0);
+	  int b = (x == 3) || (x == 0);
+	  uint32_t background = fb_colour(128 * r, 128 * g, 128 * b);
+	  uint32_t average    = fb_colour(188 * r, 188 * g, 188 * b);
+	  uint32_t high       = fb_colour(255 * r, 255 * g, 255 * b);
+	  uint32_t low        = fb_colour(0, 0, 0);
+	  uint32_t xoff = x * fb.width / 4;
+	  fb_fill_rectangle(&fb, background, xoff, 0, fb.width / 4, fb.height);
+	  xoff += (fb.width / 4 - 200) / 2;
+	  fb_fill_rectangle(&fb, high, xoff, 40, 200, 200);
+	  fb_fill_rectangle(&fb, average, xoff + 50, 40, 100, 200);
+	  fb_fill_rectangle(&fb, average, xoff, 280, 200, 200);
+	  for (y = 0; y < 200; y += 2)
+	    {
+	      fb_draw_horizontal_line(&fb, high, xoff + 50, 280 + y + 0, 100);
+	      fb_draw_horizontal_line(&fb, low , xoff + 50, 280 + y + 1, 100);
+	    }
+	  fb_fill_rectangle(&fb, average, xoff, 520, 200, 200);
+	  fb_fill_rectangle(&fb, high, xoff + 50, 520, 100, 200);
+	}
+      fb_close(&fb);
+    }
+  return 0;
+}
+
+
 int main(int argc __attribute__((unused)), char* argv[])
 {
-  if (draw_id() < 0)
+  if (draw_gamma() < 0)
     goto fail;
   
   return 0;
