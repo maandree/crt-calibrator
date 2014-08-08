@@ -64,7 +64,7 @@ void gamma_generate(size_t stops, uint16_t* restrict ramp, double gamma,
     {
       y_ = (double)i / (double)stops;
       y_ = pow(y_, gamma_) * diff + brightness;
-      y = (int32_t)(y * 0xFFFF);
+      y = (int32_t)(y_ * 0xFFFF);
       if (y < 0x0000)  y = 0x0000;
       if (y > 0xFFFF)  y = 0xFFFF;
       ramp[i] = (uint16_t)y;
