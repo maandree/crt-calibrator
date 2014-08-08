@@ -38,7 +38,7 @@ void gamma_analyse(size_t stops, const uint16_t* restrict ramp, double* restrict
   middle            = (double)(ramp[stops / 2]) / (double)0xFFFF;
   
   middle = (middle - min) / (max - min);
-  *gamma = log((double)2) / log(middle);
+  *gamma = -log((double)2) / log(middle);
 }
 
 

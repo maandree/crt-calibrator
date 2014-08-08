@@ -199,6 +199,44 @@ void draw_gamma(void)
 }
 
 
+static int read_calibs(void)
+{
+  size_t c;
+  for (c = 0; c < crtc_count; c++)
+    {
+      if (drm_get_gamma(crtcs + c) < 0)
+	return -1;
+      
+      gamma_analyse(crtcs[c].gamma_stops, crtcs[c].red, gammas[0] + c,
+		    contrasts[0] + c, brightnesses[0] + c);
+      gamma_analyse(crtcs[c].gamma_stops, crtcs[c].green, gammas[1] + c,
+		    contrasts[1] + c, brightnesses[1] + c);
+      gamma_analyse(crtcs[c].gamma_stops, crtcs[c].blue, gammas[2] + c,
+		    contrasts[2] + c, brightnesses[2] + c);
+    }
+  return 0;
+}
+
+
+static int apply_calibs(void)
+{
+  size_t c;
+  for (c = 0; c < crtc_count; c++)
+    {
+      gamma_generate(crtcs[c].gamma_stops, crtcs[c].red, gammas[0][c],
+		     contrasts[0][c], brightnesses[0][c]);
+      gamma_generate(crtcs[c].gamma_stops, crtcs[c].green, gammas[1][c],
+		     contrasts[1][c], brightnesses[1][c]);
+      gamma_generate(crtcs[c].gamma_stops, crtcs[c].blue, gammas[2][c],
+		     contrasts[2][c], brightnesses[2][c]);
+      
+      if (drm_set_gamma(crtcs + c) < 0)
+	return -1;
+    }
+  return 0;
+}
+
+
 int main(int argc __attribute__((unused)), char* argv[])
 {
   int tty_configured = 0, rc = 0, in_fork = 0;
@@ -262,7 +300,7 @@ int main(int argc __attribute__((unused)), char* argv[])
   printf("contrast should be as high as possible without\n");
   printf("causing distortion.\n");
   printf("\n");
-  printf("Press ENTER to continue, and ENTER again once\n");
+  printf("Press ENTER to continue, and ENTER again when\n");
   printf("your are done.\n");
   fflush(stdout);
   
@@ -276,7 +314,26 @@ int main(int argc __attribute__((unused)), char* argv[])
   while (getchar() != 10)
     ;
   
-  if (draw_id() < 0)
+  printf("\033[H\033[2J");
+  printf("An index will be displayed on each monitor.\n");
+  printf("It behoves you to memorise them.\n");
+  printf("\n");
+  printf("Press ENTER to continue, and ENTER again when\n");
+  printf("your are done.\n");
+  fflush(stdout);
+  
+  while (getchar() != 10)
+    ;
+  
+  printf("\033[H\033[2J");
+  fflush(stdout);
+  if ((read_calibs() < 0) || (draw_id() < 0))
+    goto fail;
+  
+  while (getchar() != 10)
+    ;
+  
+  if (apply_calibs() < 0)
     goto fail;
   
  done:

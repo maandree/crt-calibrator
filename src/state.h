@@ -51,7 +51,22 @@ extern size_t card_count;
 extern drm_crtc_t* restrict crtcs;
 
 /**
- * The number of elements in `crtcs`
+ * The software brightness setting on each connected CRT controller, on each channel
+ */
+extern double* restrict brightnesses[3];
+
+/**
+ * The software contrast setting on each connected CRT controller, on each channel
+ */
+extern double* restrict contrasts[3];
+
+/**
+ * The gamma correction on each connected CRT controller, on each channel
+ */
+extern double* restrict gammas[3];
+
+/**
+ * The number of elements in `crtcs`, `brightnesses[]`, `contrasts[]` and `gammas[]`
  */
 extern size_t crtc_count;
 

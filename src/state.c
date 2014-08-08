@@ -46,7 +46,22 @@ size_t card_count = 0;
 drm_crtc_t* restrict crtcs = NULL;
 
 /**
- * The number of elements in `crtcs`
+ * The software brightness setting on each connected CRT controller, on each channel
+ */
+double* restrict brightnesses[3];
+
+/**
+ * The software contrast setting on each connected CRT controller, on each channel
+ */
+double* restrict contrasts[3];
+
+/**
+ * The gamma correction on each connected CRT controller, on each channel
+ */
+double* restrict gammas[3];
+
+/**
+ * The number of elements in `crtcs`, `brightnesses[]`, `contrasts[]` and `gammas[]`
  */
 size_t crtc_count = 0;
 
@@ -105,6 +120,21 @@ int acquire_video(void)
 	}
     }
   
+  for (c = 0; c < 3; c++)
+    {
+      brightnesses[c] = malloc(crtc_count * sizeof(double));
+      if (brightnesses[c] == NULL)
+	return -1;
+      
+      contrasts[c] = malloc(crtc_count * sizeof(double));
+      if (contrasts[c] == NULL)
+	return -1;
+      
+      gammas[c] = malloc(crtc_count * sizeof(double));
+      if (gammas[c] == NULL)
+	return -1;
+    }
+  
   return 0;
 }
 
@@ -127,6 +157,13 @@ void release_video(void)
   for (i = 0; i < framebuffer_count; i++)
     fb_close(framebuffers + i);
   framebuffer_count = 0;
+  
+  for (i = 0; i < 3; i++)
+    {
+      free(brightnesses[i]), brightnesses[i] = NULL;
+      free(contrasts[i]), contrasts[i] = NULL;
+      free(gammas[i]), gammas[i] = NULL;
+    }
   
   free(crtcs), crtcs = NULL;
   free(cards), cards = NULL;
