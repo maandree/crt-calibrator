@@ -238,7 +238,7 @@ int main(int argc __attribute__((unused)), char* argv[])
     in_fork = 1;
   
   printf("\033[H\033[2J");
-  printf("Please turn of any programs that dynamically\n");
+  printf("Please deactivate any program that dynamically\n");
   printf("applies filters to your monitors' colours\n");
   printf("and remove any existing filters.\n");
   printf("In doubt, you probably do not have any.\n");
