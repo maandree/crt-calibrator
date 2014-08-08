@@ -280,6 +280,8 @@ int main(int argc __attribute__((unused)), char* argv[])
   printf("applies filters to your monitors' colours\n");
   printf("and remove any existing filters.\n");
   printf("In doubt, you probably do not have any.\n");
+  printf("Do not try to calibrate CRT monitors will\n");
+  printf("they are cold.\n");
   printf("\n");
   printf("You will be presented with an image on each\n");
   printf("monitor. Please use the control panel on your\n");
@@ -316,7 +318,11 @@ int main(int argc __attribute__((unused)), char* argv[])
   
   printf("\033[H\033[2J");
   printf("An index will be displayed on each monitor.\n");
-  printf("It behoves you to memorise them.\n");
+  printf("It behoves you to memorise them. They will\n");
+  printf("be used in the output when descibing the\n");
+  printf("calibrations, and is the index of the monitors\n");
+  printf("that are used when changing monitor to\n");
+  printf("calibrate.\n");
   printf("\n");
   printf("Press ENTER to continue, and ENTER again when\n");
   printf("your are done.\n");
@@ -335,21 +341,6 @@ int main(int argc __attribute__((unused)), char* argv[])
   
   if (apply_calibs() < 0)
     goto fail;
-  
-  printf("\033[H\033[2J");
-  printf("An index will be displayed on each monitor.\n");
-  printf("It behoves you to memorise them. They will\n");
-  printf("be used in the output when descibing the\n");
-  printf("calibrations, and is the index of the monitors\n");
-  printf("that are used when changing monitor to\n");
-  printf("calibrate.\n");
-  printf("\n");
-  printf("Press ENTER to continue, and ENTER again when\n");
-  printf("your are done.\n");
-  fflush(stdout);
-  
-  while (getchar() != 10)
-    ;
   
   printf("\033[H\033[2J");
   printf("You will not be given the opportunity to.\n");
@@ -376,6 +367,9 @@ int main(int argc __attribute__((unused)), char* argv[])
   printf("Press ENTER to continue, and ENTER again when\n");
   printf("your are done.\n");
   fflush(stdout);
+  
+  while (getchar() != 10)
+    ;
   
   printf("\033[H\033[2J");
   fflush(stdout);
@@ -425,6 +419,84 @@ int main(int argc __attribute__((unused)), char* argv[])
 	else if (c == '[')  b = 1;
 	else if (c == 'B')  at_contrast = 0;
 	else if (c == 'C')  at_contrast = 1;
+	else if (c == 'r')  red = 1, green = 0, blue = 0;
+	else if (c == 'g')  red = 0, green = 1, blue = 0;
+	else if (c == 'b')  red = 0, green = 0, blue = 1;
+	else if (c == 'a')  red = 1, green = 1, blue = 1;
+      }
+  }
+  
+  printf("\033[H\033[2J");
+  printf("You will now be presented with squares used\n");
+  printf("to calibrate the gamma correction. There will\n");
+  printf("be four stacks: grey, red, green and blue.\n");
+  printf("Each stack has three squares: the upper square\n");
+  printf("shows the characterics of how the middle square\n");
+  printf("will look if the gamma is too high, and the\n");
+  printf("lower shows how the middile will look if the\n");
+  printf("gamma is too low. The middle square should\n");
+  printf("look like it is one single colour if the gamma\n");
+  printf("correction is configured correctly. You may\n");
+  printf("have to look from a distance or not focus\n");
+  printf("your eyes on the squares to compensate for\n");
+  printf("the fact that there actually multiple colours\n");
+  printf("is the square.\n");
+  printf("The grey should look perfectly grey when you\n");
+  printf("are done.\n");
+  printf("\n");
+  printf("<Left> and <right> is used to change which\n");
+  printf("monitor to calibrate. <Left> switches to the\n");
+  printf("previous monitor (one lower in index) and\n");
+  printf("<right> switches to the next monitor (one\n");
+  printf("higher in index.)\n");
+  printf("<Up> and <down> is used to increase and\n");
+  printf("descrease the gamma. respectively.\n");
+  printf("<r> is used to switch to changing the red.\n");
+  printf("channel, <g> switches to the green channel,\n");
+  printf("<b> switches to the blue channel, and <a>\n");
+  printf("is used to switch to change all channels.\n");
+  printf("\n");
+  printf("Press ENTER to continue, and ENTER again when\n");
+  printf("your are done.\n");
+  fflush(stdout);
+  
+  while (getchar() != 10)
+    ;
+  
+  printf("\033[H\033[2J");
+  fflush(stdout);
+  draw_gamma();
+  
+  {
+    int c, b = 0;
+    int red = 1, green = 1, blue = 1;
+    size_t mon = 0;
+    while ((c = getchar()) != 10)
+      {
+	if (b)
+	  {
+	    b = 0;
+	    if (c == 'A')
+	      {
+		gammas[0][mon] += (double)red / 100;
+		gammas[1][mon] += (double)green / 100;
+		gammas[2][mon] += (double)blue / 100;
+	      }
+	    else if (c == 'B')
+	      {
+		gammas[0][mon] -= (double)red / 100;
+		gammas[1][mon] -= (double)green / 100;
+		gammas[2][mon] -= (double)blue / 100;
+	      }
+	    else if (c == 'C')
+	      mon = (mon + 1) % crtc_count;
+	    else if (c == 'D')
+	      mon = (mon == 0 ? crtc_count : mon) - 1;
+	    
+	    if ((c == 'A') || (c == 'B'))
+	      apply_calibs();
+	  }
+	else if (c == '[')  b = 1;
 	else if (c == 'r')  red = 1, green = 0, blue = 0;
 	else if (c == 'g')  red = 0, green = 1, blue = 0;
 	else if (c == 'b')  red = 0, green = 0, blue = 1;
