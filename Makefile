@@ -1,3 +1,14 @@
+PREFIX = /usr
+BIN = /bin
+DATA = /share
+BINDIR = $(PREFIX)$(BIN)
+DATADIR = $(PREFIX)$(DATA)
+LICENSES = $(DATADIR)/licenses
+
+COMMAND = crt-calibrator
+PKGNAME = crt-calibrator
+
+
 LIBS = libdrm
 
 FLAGS = -std=gnu99 -Og -g -Wall -Wextra -pedantic -Wdouble-promotion -Wformat=2  \
@@ -31,6 +42,22 @@ bin/crt-calibrator: $(foreach O,$(OBJS),obj/$(O).o)
 obj/%.o: src/%.c src/*.h
 	@mkdir -p obj
 	$(CC) $(C_FLAGS) -c -o $@ $<
+
+
+.PHONY: install
+install: bin/crt-calibrator
+	install -dm755 -- "$(DESTDIR)$(BINDIR)"
+	install -m755 bin/crt-calibrator -- "$(DESTDIR)$(BINDIR)/$(COMMAND)"
+	install -dm755 -- "$(DESTDIR)$(LICENSES)/$(PKGNAME)"
+	install -m644 COPYING LICNSE -- "$(DESTDIR)$(LICENSES)/$(PKGNAME)"
+
+
+.PHONY: uninstall
+uninstall:
+	-rm -- "$(DESTDIR)$(BINDIR)/$(COMMAND)"
+	-rm -- "$(DESTDIR)$(LICENSES)/$(PKGNAME)/COPYING"
+	-rm -- "$(DESTDIR)$(LICENSES)/$(PKGNAME)/LICENSE"
+	-rmdir -- "$(DESTDIR)$(LICENSES)/$(PKGNAME)"
 
 
 .PHONY: clean
