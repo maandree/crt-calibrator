@@ -336,13 +336,109 @@ int main(int argc __attribute__((unused)), char* argv[])
   if (apply_calibs() < 0)
     goto fail;
   
+  printf("\033[H\033[2J");
+  printf("An index will be displayed on each monitor.\n");
+  printf("It behoves you to memorise them. They will\n");
+  printf("be used in the output when descibing the\n");
+  printf("calibrations, and is the index of the monitors\n");
+  printf("that are used when changing monitor to\n");
+  printf("calibrate.\n");
+  printf("\n");
+  printf("Press ENTER to continue, and ENTER again when\n");
+  printf("your are done.\n");
+  fflush(stdout);
+  
+  while (getchar() != 10)
+    ;
+  
+  printf("\033[H\033[2J");
+  printf("You will not be given the opportunity to.\n");
+  printf("calibrate your monitors' brightness and\n");
+  printf("contrast using software incase your monitors\n");
+  printf("could not be sufficiently calibrated using\n");
+  printf("hardware.\n");
+  printf("\n");
+  printf("<Left> and <right> is used to change which\n");
+  printf("monitor to calibrate. <Left> switches to the\n");
+  printf("previous monitor (one lower in index) and\n");
+  printf("<right> switches to the next monitor (one\n");
+  printf("higher in index.)\n");
+  printf("<Up> and <down> is used to increase and\n");
+  printf("descrease the settings. respectively.\n");
+  printf("<Shift+b> is used to switch to changing the.\n");
+  printf("monitor's brightness and <shift+c> switches\n");
+  printf("to contrast.\n");
+  printf("<r> is used to switch to changing the red.\n");
+  printf("channel, <g> switches to the green channel,\n");
+  printf("<b> switches to the blue channel, and <a>\n");
+  printf("is used to switch to change all channels.\n");
+  printf("\n");
+  printf("Press ENTER to continue, and ENTER again when\n");
+  printf("your are done.\n");
+  fflush(stdout);
+  
+  printf("\033[H\033[2J");
+  fflush(stdout);
+  draw_contrast_brightness();
+  
+  {
+    int c, b = 0, at_contrast = 0;
+    int red = 1, green = 1, blue = 1;
+    size_t mon = 0;
+    while ((c = getchar()) != 10)
+      {
+	if (b)
+	  {
+	    b = 0;
+	    if ((c == 'A') && at_contrast)
+	      {
+		contrasts[0][mon] += (double)red / 100;
+		contrasts[1][mon] += (double)green / 100;
+		contrasts[2][mon] += (double)blue / 100;
+	      }
+	    else if (c == 'A')
+	      {
+		brightnesses[0][mon] += (double)red / 100;
+		brightnesses[1][mon] += (double)green / 100;
+		brightnesses[2][mon] += (double)blue / 100;
+	      }
+	    else if ((c == 'B') && at_contrast)
+	      {
+		contrasts[0][mon] -= (double)red / 100;
+		contrasts[1][mon] -= (double)green / 100;
+		contrasts[2][mon] -= (double)blue / 100;
+	      }
+	    else if (c == 'B')
+	      {
+		brightnesses[0][mon] -= (double)red / 100;
+		brightnesses[1][mon] -= (double)green / 100;
+		brightnesses[2][mon] -= (double)blue / 100;
+	      }
+	    else if (c == 'C')
+	      mon = (mon + 1) % crtc_count;
+	    else if (c == 'D')
+	      mon = (mon == 0 ? crtc_count : mon) - 1;
+	    
+	    if ((c == 'A') || (c == 'B'))
+	      apply_calibs();
+	  }
+	else if (c == '[')  b = 1;
+	else if (c == 'B')  at_contrast = 0;
+	else if (c == 'C')  at_contrast = 1;
+	else if (c == 'r')  red = 1, green = 0, blue = 0;
+	else if (c == 'g')  red = 0, green = 1, blue = 0;
+	else if (c == 'b')  red = 0, green = 0, blue = 1;
+	else if (c == 'a')  red = 1, green = 1, blue = 1;
+      }
+  }
+  
  done:
   if (in_fork == 0)
     {
       release_video();
       if (tty_configured)
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &saved_stty);
-      printf("\033[?25h");
+      printf("\033[H\033[2J\033[?25h");
       fflush(stdout);
     }
   return rc;
