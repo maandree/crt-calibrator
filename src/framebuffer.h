@@ -133,5 +133,22 @@ void fb_draw_vertical_line(framebuffer_t* restrict fb, uint32_t colour,
 			   uint32_t x, uint32_t y, uint32_t length);
 
 
+/**
+ * Draw a single on a framebuffer
+ * 
+ * @param  fb      The framebuffer
+ * @param  colour  The colour to use when drawing the rectangle
+ * @param  x       The pixel's position on the X axis
+ * @param  y       The pixel's position on the Y axis
+ */
+static inline void fb_draw_pixel(framebuffer_t* restrict fb, uint32_t colour,
+				 uint32_t x, uint32_t y)
+{
+  int8_t* mem = fb->mem + y * fb->line_length + x * fb->bytes_per_pixel;
+  *(uint32_t*)mem = colour;
+}
+
+
+
 #endif
 

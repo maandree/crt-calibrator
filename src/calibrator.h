@@ -65,6 +65,43 @@ int draw_id(void);
  */
 void draw_gamma(void);
 
+/**
+ * Print a pattern on the screen that can be used when
+ * calibrating the convergence
+ */
+void draw_convergence(void);
+
+/**
+ * Print a pattern on the screen that can be used when
+ * calibrating the moiré cancellation
+ * 
+ * @param  gap       The horizontal and vertical gap, in pixels, between the dots
+ * @param  diagonal  Whether to draw dots in a diagonal pattern
+ */
+void draw_moire(uint32_t gap, int diagonal);
+
+/**
+ * Analyse the monitors calibrations
+ * 
+ * @return  Zero on success, -1 on error
+ */
+int read_calibs(void);
+
+/**
+ * Apply the selected calibrations to the monitors
+ * 
+ * @return  Zero on success, -1 on error
+ */
+int apply_calibs(void);
+
+/**
+ * Print calibrations into a file
+ * 
+ * @param   f  The file
+ * @return     Zero on success, -1 on error
+ */
+int save_calibs(FILE* f);
+
 
 #endif
 

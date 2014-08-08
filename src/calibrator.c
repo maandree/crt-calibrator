@@ -199,7 +199,76 @@ void draw_gamma(void)
 }
 
 
-static int read_calibs(void)
+/**
+ * Print a pattern on the screen that can be used when
+ * calibrating the convergence
+ */
+void draw_convergence(void)
+{
+  uint32_t black = fb_colour(0, 0, 0);
+  uint32_t white = fb_colour(255, 255, 255);
+  uint32_t x, y;
+  size_t f;
+  for (f = 0; f < framebuffer_count; f++)
+    {
+      framebuffer_t* restrict fb = framebuffers + f;
+      fb_fill_rectangle(fb, black, 0, 0, fb->width, fb->height);
+      for (y = 0; y <= fb->height; y += 16)
+	{
+	  if (y == fb->height)
+	    y = fb->height - 1;
+	  for (x = 0; x <= fb->width; x += 16)
+	    {
+	      if (x == fb->height)
+		x = fb->height - 1;
+	      fb_draw_pixel(fb, white, x, y);
+	    }
+	}
+    }
+}
+
+
+/**
+ * Print a pattern on the screen that can be used when
+ * calibrating the moiré cancellation
+ * 
+ * @param  gap       The horizontal and vertical gap, in pixels, between the dots
+ * @param  diagonal  Whether to draw dots in a diagonal pattern
+ */
+void draw_moire(uint32_t gap, int diagonal)
+{
+  uint32_t black = fb_colour(0, 0, 0);
+  uint32_t white = fb_colour(255, 255, 255);
+  uint32_t x, y, gap2 = gap << 1;
+  size_t f;
+  gap += (uint32_t)(!diagonal);
+  if (diagonal)
+    for (f = 0; f < framebuffer_count; f++)
+      {
+	framebuffer_t* restrict fb = framebuffers + f;
+	fb_fill_rectangle(fb, black, 0, 0, fb->width, fb->height);
+	for (y = 0; y < fb->height; y += gap)
+	  for (x = (y % gap2); x < fb->width; x += gap2)
+	    fb_draw_pixel(fb, white, x, y);
+      }
+  else
+    for (f = 0; f < framebuffer_count; f++)
+      {
+	framebuffer_t* restrict fb = framebuffers + f;
+	fb_fill_rectangle(fb, black, 0, 0, fb->width, fb->height);
+	for (y = 0; y < fb->height; y += gap)
+	  for (x = 0; x < fb->width; x += gap)
+	    fb_draw_pixel(fb, white, x, y);
+      }
+}
+
+
+/**
+ * Analyse the monitors calibrations
+ * 
+ * @return  Zero on success, -1 on error
+ */
+int read_calibs(void)
 {
   size_t c;
   for (c = 0; c < crtc_count; c++)
@@ -218,7 +287,12 @@ static int read_calibs(void)
 }
 
 
-static int apply_calibs(void)
+/**
+ * Apply the selected calibrations to the monitors
+ * 
+ * @return  Zero on success, -1 on error
+ */
+int apply_calibs(void)
 {
   size_t c;
   for (c = 0; c < crtc_count; c++)
@@ -237,12 +311,60 @@ static int apply_calibs(void)
 }
 
 
-int main(int argc __attribute__((unused)), char* argv[])
+/**
+ * Print calibrations into a file
+ * 
+ * @param   f  The file
+ * @return     Zero on success, -1 on error
+ */
+int save_calibs(FILE* f)
 {
+  size_t c;
+  for (c = 0; c < crtc_count; c++)
+    {
+      if (fprintf(f, "# index = %lu\n",
+		  c) < 0)
+	return -1;
+      
+      if (fprintf(f, "edid = %s\n",
+		  crtcs[c].edid) < 0)
+	return -1;
+      
+      if (fprintf(f, "brightness = %f:%f:%f\n",
+		  brightnesses[0][c],
+		  brightnesses[1][c],
+		  brightnesses[2][c]) < 0)
+	return -1;
+      
+      if (fprintf(f, "contrast = %f:%f:%f\n",
+		  contrasts[0][c],
+		  contrasts[1][c],
+		  contrasts[2][c]) < 0)
+	return -1;
+      
+      if (fprintf(f, "gamma = %f:%f:%f\n\n",
+		  gammas[0][c],
+		  gammas[1][c],
+		  gammas[2][c]) < 0)
+	return -1;
+    }
+  return 0;
+}
+
+
+int main(int argc, char* argv[])
+{
+  FILE* output_file = stdout;
   int tty_configured = 0, rc = 0, in_fork = 0;
   struct termios saved_stty;
   struct termios stty;
   pid_t pid;
+  
+  if ((argc > 2) || ((argc == 2) && (argv[1][0] == '-')))
+    {
+      printf("USAGE: %s [output-file]\n", *argv);
+      return 0;
+    }
   
   if ((acquire_video()                      < 0) ||
       (tcgetattr(STDIN_FILENO, &saved_stty) < 0) ||
@@ -487,6 +609,9 @@ int main(int argc __attribute__((unused)), char* argv[])
 		gammas[0][mon] -= (double)red / 100;
 		gammas[1][mon] -= (double)green / 100;
 		gammas[2][mon] -= (double)blue / 100;
+		if (gammas[0][mon] < 0)  gammas[0][mon] = 0;
+		if (gammas[1][mon] < 0)  gammas[1][mon] = 0;
+		if (gammas[2][mon] < 0)  gammas[2][mon] = 0;
 	      }
 	    else if (c == 'C')
 	      mon = (mon + 1) % crtc_count;
@@ -504,13 +629,100 @@ int main(int argc __attribute__((unused)), char* argv[])
       }
   }
   
+  printf("\033[H\033[2J");
+  printf("The next step is to calibrate the monitors'\n");
+  printf("convergence settings using the monitors'\n");
+  printf("control panel. White dots will be printed on the\n");
+  printf("screens, you should try to get as many as\n");
+  printf("possible of them to appear as pure white dots\n");
+  printf("rather than dots splitted in the red, green and\n");
+  printf("blue dots. On most CRT monitors this is not\n");
+  printf("possible to get all corners perfect.\n");
+  printf("\n");
+  printf("Press ENTER to continue, and ENTER again when\n");
+  printf("your are done.\n");
+  fflush(stdout);
+  
+  while (getchar() != 10)
+    ;
+  
+  printf("\033[H\033[2J");
+  fflush(stdout);
+  draw_convergence();
+  
+  while (getchar() != 10)
+    ;
+  
+  printf("\033[H\033[2J");
+  printf("The final step is to calbirate the monitors' moiré\n");
+  printf("cancellation. This too is done on the using the\n");
+  printf("monitors' control panel.\n");
+  printf("\n");
+  printf("You can use <d> and the arrow keys to change the\n");
+  printf("dot-pattern on the screens.\n");
+  printf("\n");
+  printf("Press ENTER to continue, and ENTER again when\n");
+  printf("your are done.\n");
+  fflush(stdout);
+  
+  while (getchar() != 10)
+    ;
+  
+  printf("\033[H\033[2J");
+  fflush(stdout);
+  draw_moire(1, 1);
+  
+  {
+    int c, b = 0, d = 1;
+    uint32_t gap = 1;
+    while ((c = getchar()) != 10)
+      {
+	if (b)
+	  {
+	    b = 0;
+	    if ((c == 'A') || (c == 'C'))
+	      draw_moire(++gap, d);
+	    else if ((c == 'B') || (c == 'D'))
+	      {
+		if (--gap == 0)
+		  gap = 1;
+		draw_moire(gap, d);
+	      }
+	  }
+	else if (c == '[')
+	  b = 1;
+	else if (c == 'd')
+	  draw_moire(gap, d ^= 1);
+      }
+  }
+  
+  printf("\033[H\033[2J");
+  fflush(stdout);
+  
+  if (argc == 2)
+    {
+      output_file = fopen(argv[1], "w");
+      if (output_file == NULL)
+	goto fail;
+    }
+  
+  if (save_calibs(output_file) < 0)
+    goto fail;
+  fflush(output_file);
+  
+  if (argc == 2)
+    {
+      if (fclose(output_file))
+	goto fail;
+    }
+  
  done:
   if (in_fork == 0)
     {
       release_video();
       if (tty_configured)
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &saved_stty);
-      printf("\033[H\033[2J\033[?25h");
+      printf("\033[?25h");
       fflush(stdout);
     }
   return rc;
