@@ -1,7 +1,6 @@
 _/
 bin/
 obj/
-/dist/*/*
 .*
 !.git*
 *~
