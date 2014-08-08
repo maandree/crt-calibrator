@@ -1,0 +1,19 @@
+RUNTIME DEPENDENCIES:
+
+	libc
+	libdrm
+	linux
+
+BUILD DEPENDENCIES:
+
+	libc
+	libdrm
+	linux
+	gcc
+	make
+
+INSTALL DEPENDENCIES:
+
+	make
+	coreutils
+
