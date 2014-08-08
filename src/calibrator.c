@@ -21,6 +21,11 @@
 #include "state.h"
 
 #include <stdio.h>
+#include <unistd.h>
+#include <termios.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <errno.h>
 
 
 
@@ -196,17 +201,97 @@ void draw_gamma(void)
 
 int main(int argc __attribute__((unused)), char* argv[])
 {
-  if (acquire_video() < 0)
+  int tty_configured = 0, rc = 0, in_fork = 0;
+  struct termios saved_stty;
+  struct termios stty;
+  pid_t pid;
+  
+  if ((acquire_video()                      < 0) ||
+      (tcgetattr(STDIN_FILENO, &saved_stty) < 0) ||
+      (tcgetattr(STDIN_FILENO, &stty)       < 0))
     goto fail;
+  
+  stty.c_lflag &= (tcflag_t)~(ICANON | ECHO);
+  if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &stty) < 0)
+    goto fail;
+  tty_configured = 1;
+  
+  printf("\033[?25l");
+  fflush(stdout);
+  
+  pid = fork();
+  if ((pid != (pid_t)-1) && (pid != 0))
+    {
+      int status;
+    retry:
+      if (waitpid(pid, &status, 0) != (pid_t)-1)
+	rc = !!status;
+      else
+	{
+	  if (errno != EINTR)
+	    perror(*argv);
+	  goto retry;
+	}
+      goto done;
+    }
+  else if (pid == 0)
+    in_fork = 1;
+  
+  printf("\033[H\033[2J");
+  printf("Please turn of any programs that dynamically\n");
+  printf("applies filters to your monitors' colours\n");
+  printf("and remove any existing filters.\n");
+  printf("In doubt, you probably do not have any.\n");
+  printf("\n");
+  printf("You will be presented with an image on each\n");
+  printf("monitor. Please use the control panel on your\n");
+  printf("to calibrate the contrast and brightness of\n");
+  printf("each monitor. The contrasts adjusts the\n");
+  printf("brightness of bright colours, and the\n");
+  printf("brightness adjusts the brightness of dim\n");
+  printf("colours. All rectangles are of equals size\n");
+  printf("and they should be distrint from eachother.\n");
+  printf("There should only be a slight difference\n");
+  printf("between the two darkest colours for each\n");
+  printf("colour. The grey colour does not need to\n");
+  printf("be perfectly grey but should be close.\n");
+  printf("The brightness should be as high as\n");
+  printf("possible without the first square being\n");
+  printf("any other colour than black or the two first\n");
+  printf("square being too distinct from eachother. The\n");
+  printf("contrast should be as high as possible without\n");
+  printf("causing distortion.\n");
+  printf("\n");
+  printf("Press ENTER to continue, and ENTER again once\n");
+  printf("your are done.\n");
+  fflush(stdout);
+  
+  while (getchar() != 10)
+    ;
+  
+  printf("\033[H\033[2J");
+  fflush(stdout);
+  draw_contrast_brightness();
+  
+  while (getchar() != 10)
+    ;
   
   if (draw_id() < 0)
     goto fail;
   
-  release_video();
-  return 0;
+ done:
+  if (in_fork == 0)
+    {
+      release_video();
+      if (tty_configured)
+	tcsetattr(STDIN_FILENO, TCSAFLUSH, &saved_stty);
+      printf("\033[?25h");
+      fflush(stdout);
+    }
+  return rc;
  fail:
   perror(*argv);
-  release_video();
-  return 1;
+  rc = 1;
+  goto done;
 }
 

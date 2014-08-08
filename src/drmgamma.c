@@ -27,14 +27,6 @@
 
 
 /**
- * Close on exec flag for `open`
- */
-#ifndef O_CLOEXEC
-# define O_CLOEXEC  02000000
-#endif
-
-
-/**
  * The number of elements to allocates to a buffer for a DRM device pathname
  */
 #define DRM_DEV_NAME_MAX_LEN  \
@@ -80,7 +72,7 @@ int drm_card_open(size_t index, drm_card_t* restrict card)
   card->connector_count = 0;
   
   sprintf(buf, DRM_DEV_NAME, DRM_DIR_NAME, (int)index);
-  card->fd = open(buf, O_RDWR | O_CLOEXEC);
+  card->fd = open(buf, O_RDWR);
   if (card->fd == -1)
     goto fail;
   
