@@ -20,7 +20,6 @@
 #include "gamma.h"
 #include "state.h"
 
-#include <stdio.h>
 #include <unistd.h>
 #include <termios.h>
 #include <sys/types.h>

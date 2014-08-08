@@ -49,7 +49,7 @@ install: bin/crt-calibrator
 	install -dm755 -- "$(DESTDIR)$(BINDIR)"
 	install -m755 bin/crt-calibrator -- "$(DESTDIR)$(BINDIR)/$(COMMAND)"
 	install -dm755 -- "$(DESTDIR)$(LICENSES)/$(PKGNAME)"
-	install -m644 COPYING LICNSE -- "$(DESTDIR)$(LICENSES)/$(PKGNAME)"
+	install -m644 COPYING LICENSE -- "$(DESTDIR)$(LICENSES)/$(PKGNAME)"
 
 
 .PHONY: uninstall
