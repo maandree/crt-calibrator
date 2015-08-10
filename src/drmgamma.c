@@ -166,6 +166,8 @@ int drm_crtc_open(size_t index, drm_card_t* restrict card, drm_crtc_t* restrict 
   crtc->id = card->res->crtcs[index];
   crtc->card = card;
   
+  crtc->connector = NULL;
+  crtc->encoder = NULL;
   for (i = 0; i < card->connector_count; i++)
     if (card->encoders[i] != NULL)
       if (card->encoders[i]->crtc_id == crtc->id)
@@ -174,7 +176,7 @@ int drm_crtc_open(size_t index, drm_card_t* restrict card, drm_crtc_t* restrict 
 	  crtc->encoder = card->encoders[i];
 	}
   
-  crtc->connected = crtc->connector->connection == DRM_MODE_CONNECTED;
+  crtc->connected = (crtc->connector != NULL) && (crtc->connector->connection == DRM_MODE_CONNECTED);
   
   info = drmModeGetCrtc(card->fd, crtc->id);
   if (info == NULL)
@@ -189,6 +191,8 @@ int drm_crtc_open(size_t index, drm_card_t* restrict card, drm_crtc_t* restrict 
   crtc->green = crtc->red   + crtc->gamma_stops;
   crtc->blue  = crtc->green + crtc->gamma_stops;
   
+  if (crtc->connector == NULL)
+    return 0;
   for (i = 0; i < (size_t)(crtc->connector->count_props); i++)
     {
       size_t j;
