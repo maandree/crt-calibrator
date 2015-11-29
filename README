@@ -1,6 +1,25 @@
-Calibration utility for CRT monitors.
+NAME
+	crt-calibrator - CRT monitor calibrator utility for Linux VT
 
-Run the program in the TTY on Linux
-and it will help you calibrator your
-monitors.
+SYNOPSIS
+	crt-calibrator [FILE]
+
+DESCRIPTION
+	crt-calibrator is an interactive tool that guides you through
+	calibrating your CRT monitors. When done, the program will
+	print colour ramps information that is useful when setting
+	the calibrations automatically. If FILE is specified, this
+	information is stored to that the file named FILE.
+
+	The program cannot be run from inside X, it is required that
+	it is run from the Linux VT, otherwise known as the TTY.
+
+NOTE
+	crt-calibrator should not be used to calibrate LCD (neither
+	LED or TFT), plasma monitors, or OLED. It should only be
+	used to calibrate monitors with nice gamma-curves, such as
+	CRT monitors. Not monitors with sigmoid-curves.
+
+SEE ALSO
+	analyse-gamma(1), blueshift(1)
 
