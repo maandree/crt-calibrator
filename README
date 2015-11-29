@@ -14,7 +14,7 @@ DESCRIPTION
 	The program cannot be run from inside X, it is required that
 	it is run from the Linux VT, otherwise known as the TTY.
 
-NOTE
+NOTES
 	crt-calibrator should not be used to calibrate LCD (neither
 	LED or TFT), plasma monitors, or OLED. It should only be
 	used to calibrate monitors with nice gamma-curves, such as
