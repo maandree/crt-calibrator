@@ -12,7 +12,7 @@
 
 @dircategory Miscellaneous
 @direntry
-* crt-calibrator: (crt-calibrator.)  CRT monitor calibrator utility for Linux VT
+* crt-calibrator: (crt-calibrator).  CRT monitor calibrator utility for Linux VT
 @end direntry
 
 
