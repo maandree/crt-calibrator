@@ -4,6 +4,7 @@ RUNTIME DEPENDENCIES:
 	libdrm
 	linux
 
+
 BUILD DEPENDENCIES:
 
 	libc
@@ -11,6 +12,8 @@ BUILD DEPENDENCIES:
 	linux
 	gcc
 	make
+	texinfo (opt-put: for info, pdf, dvi and ps manuals)
+
 
 INSTALL DEPENDENCIES:
 
