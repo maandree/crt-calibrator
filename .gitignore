@@ -1,15 +1,5 @@
-_/
-bin/
-obj/
-.*
-!.git*
+*\#*
 *~
-\#*\#
-*.bak
-*.swp
-*.swo
 *.o
 *.su
-*.out
-*.gch
-
+/crt-calibrator

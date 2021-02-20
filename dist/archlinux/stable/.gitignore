@@ -1,9 +1,0 @@
-*
-!/.git*
-!/PKGBUILD
-!/crt-calibrator.install
-*~
-*.swo
-*.swp
-*.bak
-
