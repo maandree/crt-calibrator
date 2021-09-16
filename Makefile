@@ -12,8 +12,9 @@ OBJ =\
 
 HDR = common.h
 
+
 all: crt-calibrator
-$(OBJ): $(@:.o=.c) $(HDR)
+$(OBJ): $(HDR)
 
 crt-calibrator: $(OBJ)
 	$(CC) -o $@ $(OBJ) $(LDFLAGS)
@@ -28,11 +29,11 @@ install: crt-calibrator
 	cp -- crt-calibrator.1 "$(DESTDIR)$(MANPREFIX)/man1/"
 
 uninstall:
-	-rm -- "$(DESTDIR)$(BINDIR)/crt-calibrator"
-	-rm -- "$(DESTDIR)$(MAN1DIR)/crt-calibrator.1"
+	-rm -- "$(DESTDIR)$(PREFIX)/bin/crt-calibrator"
+	-rm -- "$(DESTDIR)$(MANPREFIX)/man1/crt-calibrator.1"
 
 clean:
-	-rm -rf -- crt-calibrator *.o
+	-rm -rf -- crt-calibrator *.o *.su
 
 .SUFFIXES:
 .SUFFIXES: .o .c

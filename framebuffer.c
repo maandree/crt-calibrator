@@ -152,7 +152,8 @@ fb_fill_rectangle(framebuffer_t *restrict fb, uint32_t colour, uint32_t x, uint3
  * @param  y       The starting pixel on the Y axis for the line segment
  * @param  length  The length of the line segment, in pixels
  */
-void fb_draw_horizontal_line(framebuffer_t *restrict fb, uint32_t colour, uint32_t x, uint32_t y, uint32_t length)
+void
+fb_draw_horizontal_line(framebuffer_t *restrict fb, uint32_t colour, uint32_t x, uint32_t y, uint32_t length)
 {
 	int8_t *mem = fb->mem + y * fb->line_length;
 	size_t x1 = x * fb->bytes_per_pixel;
@@ -172,7 +173,8 @@ void fb_draw_horizontal_line(framebuffer_t *restrict fb, uint32_t colour, uint32
  * @param  y       The starting pixel on the Y axis for the line segment
  * @param  length  The length of the line segment, in pixels
  */
-void fb_draw_vertical_line(framebuffer_t *restrict fb, uint32_t colour, uint32_t x, uint32_t y, uint32_t length)
+void
+fb_draw_vertical_line(framebuffer_t *restrict fb, uint32_t colour, uint32_t x, uint32_t y, uint32_t length)
 {
 	int8_t *mem = fb->mem + y * fb->line_length + x * fb->bytes_per_pixel;
 	size_t y2 = y + length;

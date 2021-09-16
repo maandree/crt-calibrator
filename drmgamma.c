@@ -6,7 +6,7 @@
  * The number of elements to allocates to a buffer for a DRM device pathname
  */
 #define DRM_DEV_NAME_MAX_LEN\
-  ((sizeof(DRM_DEV_NAME) + sizeof(DRM_DIR_NAME)) / sizeof(char) + 3 * sizeof(int))
+	((sizeof(DRM_DEV_NAME) + sizeof(DRM_DIR_NAME)) / sizeof(char) + 3 * sizeof(int))
 
 
 

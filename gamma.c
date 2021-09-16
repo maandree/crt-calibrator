@@ -11,8 +11,9 @@
  * @param  contrast    Output parameter for the contrast
  * @param  brightness  Output parameter for the brightness
  */
-void gamma_analyse(size_t stops, const uint16_t *restrict ramp, double *restrict gamma,
-                   double *restrict contrast, double *restrict brightness)
+void
+gamma_analyse(size_t stops, const uint16_t *restrict ramp, double *restrict gamma,
+              double *restrict contrast, double *restrict brightness)
 {
 	double min, middle, max;
 	*brightness = min = (double)(ramp[0])         / (double)0xFFFF;
@@ -38,7 +39,8 @@ void gamma_analyse(size_t stops, const uint16_t *restrict ramp, double *restrict
  * @param  contrast    The contrast
  * @param  brightness  The brightness
  */
-void gamma_generate(size_t stops, uint16_t *restrict ramp, double gamma, double contrast, double brightness)
+void
+gamma_generate(size_t stops, uint16_t *restrict ramp, double gamma, double contrast, double brightness)
 {
 	double diff = contrast - brightness;
 	double gamma_ = (double)1 / gamma;
