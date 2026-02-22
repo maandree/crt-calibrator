@@ -4,18 +4,15 @@ RUNTIME DEPENDENCIES:
 	libdrm
 	linux
 
-
 BUILD DEPENDENCIES:
 
 	libc
 	libdrm
 	linux
-	gcc
+	c99
 	make
-
 
 INSTALL DEPENDENCIES:
 
 	make
 	coreutils
-

@@ -78,7 +78,7 @@ draw_digit(framebuffer_t *restrict fb, int colour, uint32_t x, uint32_t y)
  * 
  * @param  crtc    The CRT controller information
  * @param  colour  The intensity of the least intense colour in the seven segment display
- * @param  value   The valud of the digit to display
+ * @param  value   The value of the digit to display
  */
 static void
 gamma_digit(drm_crtc_t *restrict crtc, int colour, size_t value)
@@ -139,7 +139,7 @@ draw_id(void)
 
 
 /**
- * Draw squares used as reference when tweeking the gamma correction
+ * Draw squares used as reference when tweaking the gamma correction
  */
 static void
 draw_gamma(void)
@@ -194,8 +194,8 @@ draw_convergence(void)
 			if (y == fb->height)
 				y = fb->height - 1;
 			for (x = 0; x <= fb->width; x += 16) {
-				if (x == fb->height)
-					x = fb->height - 1;
+				if (x == fb->width)
+					x = fb->width - 1;
 				fb_draw_pixel(fb, white, x, y);
 			}
 		}
@@ -359,7 +359,7 @@ main(int argc, char *argv[])
 	printf("applies filters to your monitors' colours\n");
 	printf("and remove any existing filters.\n");
 	printf("In doubt, you probably do not have any.\n");
-	printf("Do not try to calibrate CRT monitors will\n");
+	printf("Do not try to calibrate CRT monitors while\n");
 	printf("they are cold.\n");
 	printf("\n");
 	printf("You will be presented with an image on each\n");
@@ -369,7 +369,7 @@ main(int argc, char *argv[])
 	printf("brightness of bright colours, and the\n");
 	printf("brightness adjusts the brightness of dim\n");
 	printf("colours. All rectangles are of equals size\n");
-	printf("and they should be distrint from eachother.\n");
+	printf("and they should be distinct from each other.\n");
 	printf("There should only be a slight difference\n");
 	printf("between the two darkest colours for each\n");
 	printf("colour. The grey colour does not need to\n");
@@ -377,12 +377,12 @@ main(int argc, char *argv[])
 	printf("The brightness should be as high as\n");
 	printf("possible without the first square being\n");
 	printf("any other colour than black or the two first\n");
-	printf("square being too distinct from eachother. The\n");
+	printf("square being too distinct from each other. The\n");
 	printf("contrast should be as high as possible without\n");
 	printf("causing distortion.\n");
 	printf("\n");
 	printf("Press ENTER to continue, and ENTER again when\n");
-	printf("your are done.\n");
+	printf("you are done.\n");
 	fflush(stdout);
 
 	while (getchar() != '\n');
@@ -395,14 +395,14 @@ main(int argc, char *argv[])
 
 	printf("\033[H\033[2J");
 	printf("An index will be displayed on each monitor.\n");
-	printf("It behoves you to memorise them. They will\n");
-	printf("be used in the output when descibing the\n");
+	printf("It is advisable to memorise them. They will\n");
+	printf("be used in the output when describing the\n");
 	printf("calibrations, and is the index of the monitors\n");
 	printf("that are used when changing monitor to\n");
 	printf("calibrate.\n");
 	printf("\n");
 	printf("Press ENTER to continue, and ENTER again when\n");
-	printf("your are done.\n");
+	printf("you are done.\n");
 	fflush(stdout);
 
 	while (getchar() != '\n');
@@ -420,7 +420,7 @@ main(int argc, char *argv[])
 	printf("\033[H\033[2J");
 	printf("You will not be given the opportunity to.\n");
 	printf("calibrate your monitors' brightness and\n");
-	printf("contrast using software incase your monitors\n");
+	printf("contrast using software in case your monitors\n");
 	printf("could not be sufficiently calibrated using\n");
 	printf("hardware.\n");
 	printf("\n");
@@ -430,7 +430,7 @@ main(int argc, char *argv[])
 	printf("<right> switches to the next monitor (one\n");
 	printf("higher in index.)\n");
 	printf("<Up> and <down> is used to increase and\n");
-	printf("descrease the settings. respectively.\n");
+	printf("decrease the settings, respectively.\n");
 	printf("<Shift+b> is used to switch to changing the.\n");
 	printf("monitor's brightness and <shift+c> switches\n");
 	printf("to contrast.\n");
@@ -440,7 +440,7 @@ main(int argc, char *argv[])
 	printf("is used to switch to change all channels.\n");
 	printf("\n");
 	printf("Press ENTER to continue, and ENTER again when\n");
-	printf("your are done.\n");
+	printf("you are done.\n");
 	fflush(stdout);
 
 	while (getchar() != '\n');
@@ -494,9 +494,9 @@ main(int argc, char *argv[])
 	printf("to calibrate the gamma correction. There will\n");
 	printf("be four stacks: grey, red, green and blue.\n");
 	printf("Each stack has three squares: the upper square\n");
-	printf("shows the characterics of how the middle square\n");
+	printf("shows the characteristics of how the middle square\n");
 	printf("will look if the gamma is too high, and the\n");
-	printf("lower shows how the middile will look if the\n");
+	printf("lower shows how the middle will look if the\n");
 	printf("gamma is too low. The middle square should\n");
 	printf("look like it is one single colour if the gamma\n");
 	printf("correction is configured correctly. You may\n");
@@ -513,14 +513,14 @@ main(int argc, char *argv[])
 	printf("<right> switches to the next monitor (one\n");
 	printf("higher in index.)\n");
 	printf("<Up> and <down> is used to increase and\n");
-	printf("descrease the gamma. respectively.\n");
+	printf("decrease the gamma, respectively.\n");
 	printf("<r> is used to switch to changing the red.\n");
 	printf("channel, <g> switches to the green channel,\n");
 	printf("<b> switches to the blue channel, and <a>\n");
 	printf("is used to switch to change all channels.\n");
 	printf("\n");
 	printf("Press ENTER to continue, and ENTER again when\n");
-	printf("your are done.\n");
+	printf("you are done.\n");
 	fflush(stdout);
 
 	while (getchar() != '\n');
@@ -568,12 +568,12 @@ main(int argc, char *argv[])
 	printf("control panel. White dots will be printed on the\n");
 	printf("screens, you should try to get as many as\n");
 	printf("possible of them to appear as pure white dots\n");
-	printf("rather than dots splitted in the red, green and\n");
+	printf("rather than dots split into red, green, and\n");
 	printf("blue dots. On most CRT monitors this is not\n");
 	printf("possible to get all corners perfect.\n");
 	printf("\n");
 	printf("Press ENTER to continue, and ENTER again when\n");
-	printf("your are done.\n");
+	printf("you are done.\n");
 	fflush(stdout);
 
 	while (getchar() != '\n');
@@ -585,15 +585,15 @@ main(int argc, char *argv[])
 	while (getchar() != '\n');
 
 	printf("\033[H\033[2J");
-	printf("The final step is to calbirate the monitors' moiré\n");
-	printf("cancellation. This too is done on the using the\n");
+	printf("The final step is to calibrate the monitors' moiré\n");
+	printf("cancellation. This is also done using the\n");
 	printf("monitors' control panel.\n");
 	printf("\n");
 	printf("You can use <d> and the arrow keys to change the\n");
 	printf("dot-pattern on the screens.\n");
 	printf("\n");
 	printf("Press ENTER to continue, and ENTER again when\n");
-	printf("your are done.\n");
+	printf("you are done.\n");
 	fflush(stdout);
 
 	while (getchar() != '\n');

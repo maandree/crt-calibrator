@@ -12,7 +12,6 @@ OBJ =\
 
 HDR = common.h
 
-
 all: crt-calibrator
 $(OBJ): $(HDR)
 
